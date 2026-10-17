@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>お気に入り底値＆ストック買い出しメモ</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --success: #16a34a;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --border: #cbd5e1;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 15px;
+    }
+    h1 {
+      font-size: 1.3rem;
+      text-align: center;
+      color: var(--primary);
+      margin-bottom: 5px;
+    }
+    .subtitle {
+      font-size: 0.85rem;
+      text-align: center;
+      color: #64748b;
+      margin-bottom: 15px;
+    }
+    .card {
+      background: var(--card-bg);
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 15px;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .card-title {
+      font-weight: bold;
+      font-size: 1rem;
+      margin-bottom: 10px;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 5px;
+    }
+    .form-group {
+      margin-bottom: 10px;
+    }
+    .form-row {
+      display: flex;
+      gap: 10px;
+    }
+    .form-row .form-group {
+      flex: 1;
+    }
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: bold;
+      margin-bottom: 3px;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      box-sizing: border-box;
+      font-size: 0.95rem;
+    }
+    button {
+      width: 100%;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 5px;
+    }
+    button:hover { opacity: 0.9; }
+
+    /* 一覧表示 */
+    .item-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .item-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+    .item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .item-title {
+      font-weight: bold;
+      font-size: 1rem;
+    }
+    
+    .stock-badge {
+      font-size: 0.8rem;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+    .stock-green { background: #dcfce7; color: #15803d; }
+    .stock-yellow { background: #fef9c3; color: #a16207; }
+    .stock-red { background: #fee2e2; color: #b91c1c; }
+
+    .price-comparison {
+      display: flex;
+      justify-content: space-between;
+      background: #f1f5f9;
+      padding: 8px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      margin-bottom: 8px;
+    }
+
+    .sale-memo-box {
+      margin-top: 8px;
+      padding: 8px;
+      background: #fff7ed;
+      border: 1px solid #ffedd5;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      color: #c2410c;
+    }
+
+    .item-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .edit-btn {
+      background: #0284c7;
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      width: auto;
+      margin-top: 0;
+    }
+    .del-btn {
+      background: #ef4444;
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      width: auto;
+      margin-top: 0;
+    }
+    .guide-box {
+      font-size: 0.85rem;
+      color: #475569;
+      line-height: 1.6;
+    }
+    .guide-box h3 {
+      font-size: 0.95rem;
+      color: var(--text);
+      margin-top: 10px;
+      margin-bottom: 5px;
+    }
+
+    /* 編集エリア */
+    .edit-area {
+      background: #f8fafc;
+      border: 1px dashed var(--primary);
+      padding: 10px;
+      border-radius: 6px;
+      margin-top: 8px;
+    }
+
+    /* 記事ファイルへのリンク用スタイル */
+    .article-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .article-item {
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px dashed #e2e8f0;
+    }
+    .article-item:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+    .article-link {
+      display: block;
+      color: var(--primary);
+      font-weight: bold;
+      text-decoration: none;
+      font-size: 0.9rem;
+      margin-bottom: 3px;
+    }
+    .article-link:hover {
+      text-decoration: underline;
+    }
+    .article-desc {
+      font-size: 0.8rem;
+      color: #64748b;
+      margin: 0;
+      line-height: 1.4;
+    }
+
+    /* 広告エリア用スタイル */
+    .ad-container {
+      text-align: center;
+      margin: 15px 0;
+    }
+    .ad-divider {
+      border-top: 1px dashed #e2e8f0;
+      margin: 15px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🛒 お気に入り底値＆買い出しメモ</h1>
+  <div class="subtitle">出先のスーパーで「いつもの店より安いか」を一瞬で判断！</div>
+
+  <!-- 登録フォーム -->
+  <div class="card">
+    <div class="card-title">＋ お気に入り商品・底値の登録</div>
+    <form id="item-form">
+      <div class="form-group">
+        <label for="itemName">商品名（お気に入り調味料・日用品など）</label>
+        <input type="text" id="itemName" placeholder="例: 醤油、洗剤" required>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="basePrice">いつもの店の底値 (円)</label>
+          <input type="number" id="basePrice" placeholder="例: 234" required>
+        </div>
+        <div class="form-group">
+          <label for="baseShop">いつもの店名</label>
+          <input type="text" id="baseShop" placeholder="例: 〇〇店" required>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="stockCount">現在の家でのストック</label>
+          <select id="stockCount">
+            <option value="あり（余りあり）">あり（余りあり）</option>
+            <option value="残りわずか">残りわずか</option>
+            <option value="なし（要購入）">なし（要購入）</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="itemMemo">メモ（セール情報・型番・サイズなど）</label>
+        <input type="text" id="itemMemo" placeholder="例: あさってまで〇〇店で453円セール！ / 1.8Lサイズ">
+      </div>
+
+      <button type="submit">お気に入り底値を保存</button>
+    </form>
+  </div>
+
+  <!-- 登録リスト -->
+  <div class="card">
+    <div class="card-title">お気に入り底値リスト</div>
+    <ul class="item-list" id="itemList"></ul>
+  </div>
+
+  <!-- ガイド・審査対策用コンテンツ -->
+  <div class="card">
+    <div class="card-title">💡 このメモ帳の使い方・メリット</div>
+    <div class="guide-box">
+      <h3>1. 「ついで買い」の失敗を防ぐ</h3>
+      <p>別のスーパーでセールを見かけた時、「いつもの店より本当に安いか」をその場で確認できます。</p>
+      <h3>2. ストックがある時の賢い買い足し</h3>
+      <p>家にまだお気に入りの調味料が余っていても、いつもの底値より圧倒的に安い特売なら「ストック用に今買う」という判断が迷わずできます。</p>
+    </div>
+  </div>
+
+  <!-- 審査対策用：4つの記事ファイル（同フォルダ内）へのリンク -->
+  <div class="card">
+    <div class="card-title">📚 お買いもの＆節約お役立ちコラム</div>
+    <ul class="article-list">
+      <li class="article-item">
+        <a href="article1.html" class="article-link">1. スーパーの底値を見極める3つのコツ</a>
+        <p class="article-desc">特売日に惑わされず、本当に安いタイミングで購入するための基本知識を解説します。</p>
+      </li>
+      <li class="article-item">
+        <a href="article2.html" class="article-link">2. 調味料や日用品の賢いストック管理術</a>
+        <p class="article-desc">「買い忘れ」と「ダブり買い」を防ぎ、家庭の在庫をスッキリ管理するアイデア。</p>
+      </li>
+      <li class="article-item">
+        <a href="article3.html" class="article-link">3. ついで買いをなくす！計画的な買い出しの秘訣</a>
+        <p class="article-desc">無駄遣いを減らし、毎月の食費・日用品費を抑えるためのショッピングリスト作成法。</p>
+      </li>
+      <li class="article-item">
+        <a href="article4.html" class="article-link">4. プライバシーポリシー・運営情報</a>
+        <p class="article-desc">当サイトの個人情報の取り扱い、免責事項、および運営情報について掲載しています。</p>
+      </li>
+    </ul>
+  </div>
+
+  <!-- 広告エリア -->
+  <div class="card">
+    <div class="card-title">🛍️ おすすめのお買い物・通販情報</div>
+    <div class="ad-container">
+      <!-- 楽天広告 -->
+      <a href="https://rpx.a8.net/svt/ejp?a8mat=4BCMO0+FUDBUQ+2HOM+656YP&rakuten=y&a8ejpredirect=http%3A%2F%2Fhb.afl.rakuten.co.jp%2Fhgc%2F0ea62065.34400275.0ea62066.204f04c0%2Fa26092964500_4BCMO0_FUDBUQ_2HOM_656YP%3Fpc%3Dhttp%253A%252F%252Fwww.rakuten.co.jp%252F%26m%3Dhttp%253A%252F%252Fm.rakuten.co.jp%252F" rel="nofollow">
+      <img src="http://hbb.afl.rakuten.co.jp/hsb/0ec09ba3.bc2429d5.0eb4bbaa.95151395/" border="0"></a>
+      <img border="0" width="1" height="1" src="https://www15.a8.net/0.gif?a8mat=4BCMO0+FUDBUQ+2HOM+656YP" alt="">
+    </div>
+    <div class="ad-divider"></div>
+    <div class="ad-container">
+      <!-- よろずやマルシェ広告 -->
+      <a href="https://px.a8.net/svt/ejp?a8mat=4BE7SO+46MQDE+22DS+BZ0Z6" rel="nofollow">毎日の通販生活を面白く♪「よろずやマルシェ」</a>
+      <img border="0" width="1" height="1" src="https://www17.a8.net/0.gif?a8mat=4BE7SO+46MQDE+22DS+BZ0Z6" alt="">
+    </div>
+  </div>
+
+  <script>
+    let items = JSON.parse(localStorage.getItem('my_shopping_bottom_prices')) || [];
+    let editingIndex = -1;
+
+    const form = document.getElementById('item-form');
+    const nameEl = document.getElementById('itemName');
+    const priceEl = document.getElementById('basePrice');
+    const shopEl = document.getElementById('baseShop');
+    const stockEl = document.getElementById('stockCount');
+    const memoEl = document.getElementById('itemMemo');
+    const listEl = document.getElementById('itemList');
+
+    function render() {
+      listEl.innerHTML = '';
+
+      if (items.length === 0) {
+        listEl.innerHTML = '<li style="text-align:center; color:#94a3b8; padding:15px; font-size:0.85rem;">登録されたお気に入り商品はまだありません</li>';
+        return;
+      }
+
+      items.forEach((item, index) => {
+        const li = document.createElement('li');
+        li.className = 'item-card';
+
+        let stockClass = 'stock-green';
+        if (item.stock === '残りわずか') stockClass = 'stock-yellow';
+        if (item.stock === 'なし（要購入）') stockClass = 'stock-red';
+
+        if (editingIndex === index) {
+          li.innerHTML = `
+            <div class="edit-area">
+              <div style="font-weight:bold; margin-bottom:8px; font-size:0.9rem;">✏️ 内容の修正</div>
+              <div class="form-group">
+                <label>商品名</label>
+                <input type="text" id="edit-name-${index}" value="${escapeHtml(item.name)}">
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>基準底値(円)</label>
+                  <input type="number" id="edit-price-${index}" value="${item.price}">
+                </div>
+                <div class="form-group">
+                  <label>基準店名</label>
+                  <input type="text" id="edit-shop-${index}" value="${escapeHtml(item.shop)}">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>在庫状況</label>
+                <select id="edit-stock-${index}">
+                  <option value="あり（余りあり）" ${item.stock === 'あり（余りあり）' ? 'selected' : ''}>あり（余りあり）</option>
+                  <option value="残りわずか" ${item.stock === '残りわずか' ? 'selected' : ''}>残りわずか</option>
+                  <option value="なし（要購入）" ${item.stock === 'なし（要購入）' ? 'selected' : ''}>なし（要購入）</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>メモ（セール情報・特記事項）</label>
+                <input type="text" id="edit-memo-${index}" value="${escapeHtml(item.memo || '')}">
+              </div>
+              <div class="item-actions">
+                <button type="button" class="edit-btn" onclick="saveEdit(${index})">保存</button>
+                <button type="button" class="del-btn" style="background:#64748b;" onclick="cancelEdit()">キャンセル</button>
+              </div>
+            </div>
+          `;
+        } else {
+          let memoHtml = item.memo ? `<div class="sale-memo-box">🏷️ <strong>メモ・セール情報:</strong><br>${escapeHtml(item.memo)}</div>` : '';
+
+          li.innerHTML = `
+            <div class="item-header">
+              <span class="item-title">${escapeHtml(item.name)}</span>
+              <span class="stock-badge ${stockClass}">在庫: ${escapeHtml(item.stock)}</span>
+            </div>
+            <div class="price-comparison">
+              <span>いつもの基準店: <strong>${escapeHtml(item.shop)}</strong></span>
+              <span>基準底値: <strong style="color:#d97706;">${item.price} 円</strong></span>
+            </div>
+            ${memoHtml}
+            <div class="item-actions">
+              <button class="edit-btn" onclick="startEdit(${index})">編集</button>
+              <button class="del-btn" onclick="deleteItem(${index})">削除</button>
+            </div>
+          `;
+        }
+
+        listEl.appendChild(li);
+      });
+
+      localStorage.setItem('my_shopping_bottom_prices', JSON.stringify(items));
+    }
+
+    function startEdit(index) {
+      editingIndex = index;
+      render();
+    }
+
+    function cancelEdit() {
+      editingIndex = -1;
+      render();
+    }
+
+    function saveEdit(index) {
+      const newName = document.getElementById(`edit-name-${index}`).value;
+      const newPrice = document.getElementById(`edit-price-${index}`).value;
+      const newShop = document.getElementById(`edit-shop-${index}`).value;
+      const newStock = document.getElementById(`edit-stock-${index}`).value;
+      const newMemo = document.getElementById(`edit-memo-${index}`).value;
+
+      if (!newName || !newPrice || !newShop) {
+        alert('項目をすべて入力してください');
+        return;
+      }
+
+      items[index].name = newName;
+      items[index].price = newPrice;
+      items[index].shop = newShop;
+      items[index].stock = newStock;
+      items[index].memo = newMemo;
+
+      editingIndex = -1;
+      render();
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      items.push({
+        name: nameEl.value,
+        price: priceEl.value,
+        shop: shopEl.value,
+        stock: stockEl.value,
+        memo: memoEl.value
+      });
+
+      nameEl.value = '';
+      priceEl.value = '';
+      shopEl.value = '';
+      memoEl.value = '';
+      render();
+    });
+
+    function deleteItem(index) {
+      if (confirm('このお気に入り商品を削除しますか？')) {
+        items.splice(index, 1);
+        if (editingIndex === index) editingIndex = -1;
+        render();
+      }
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    render();
+  </script>
+<!-- 関連ツールリンクエリア --><div style="margin-top: 30px; padding: 15px; background-color: #f9f9f9; border-radius: 8px;">
+  <h3 style="font-size: 16px; margin-bottom: 10px;">便利な関連ツール</h3>
+  <ul style="list-style: none; padding-left: 0; line-height: 1.8;">
+    <li>👉 <a href="https://konetu.pages.dev/">光熱費管理</a></li>
+    <li>👉 <a href="https://shoumikigen.pages.dev/">賞味期限管理</a></li>
+    <li>👉 <a href="https://poinnto.pages.dev/">ポイ活管理</a></li>
+    <li>👉 <a href="https://souji-aap.pages.dev/">掃除管理</a></li>
+    <li>👉 <a href="https://running-29c.pages.dev/">ランニング記録</a></li>
+  </ul></div>
+</body>
+</html>
